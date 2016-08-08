@@ -1,0 +1,20 @@
+kafka:
+  broker: localhost:9092
+  zookeeper: localhost:2181
+  topic: switchbox
+  messageKey: swichbox.key
+  
+mqtt:
+  username: admin
+  password: password
+  url: tcp://localhost:61613
+  autostartup: true
+  topic: switchbox
+  qos: 1
+  inboundclientid: switchbox-mqtt-listener
+  outboundclientid: switchbox-mqtt-publisher
+  
+threadpool:
+  threadpool.core-pool-size: 50
+  threadpool.max-pool-size: 200
+  threadpool.queue-capacity: 50
