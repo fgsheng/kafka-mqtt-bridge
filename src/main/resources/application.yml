@@ -18,3 +18,8 @@ threadpool:
   threadpool.core-pool-size: 50
   threadpool.max-pool-size: 200
   threadpool.queue-capacity: 50
+  
+monitor:
+  url: http://admin:password@localhost:61680/api/json/broker/connectors/tcp
+  interval: 2000
+  connected: 0

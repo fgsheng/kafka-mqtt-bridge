@@ -55,6 +55,9 @@ public class MqttkafkaBridge {
 
 	@Autowired
 	private KafkaSettings kafkaSettings;
+	
+	@Autowired
+	private ApolloMonitor apolloMonitor;
 
 	public static void main(final String... args) {
 		SpringApplication.run(MqttkafkaBridge.class, args);
