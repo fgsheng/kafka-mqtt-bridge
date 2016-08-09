@@ -19,6 +19,6 @@
 
 	<logger name="com.ibm.switchbox" level="INFO" />
 
-	<logger name="switchbox" level="DEBUG" />
+	<logger name="switchbox" level="INFO" />
 
 </configuration>
