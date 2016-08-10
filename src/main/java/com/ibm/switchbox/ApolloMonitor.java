@@ -45,27 +45,15 @@ public class ApolloMonitor implements Runnable {
 				ObjectMapper mapper = new ObjectMapper();
 				String count = mapper.readTree(content).get("connected").toString();
 				this.connectedCount = Integer.valueOf(count);
-			    System.out.println("Apollo monitor: current connection count is "+ this.connectedCount);
+//			    System.out.println("Apollo monitor: current connection count is "+ this.connectedCount);
 			    Thread.currentThread().sleep(INTERVAL);
-			} catch (ClientProtocolException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			} catch (JsonProcessingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			} 
 		}
 		
 	}
 	
-	public static void main(String args[]) throws ClientProtocolException, IOException{
-		new Thread(new ApolloMonitor()).start();
-	}
 	
 }

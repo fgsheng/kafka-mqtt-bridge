@@ -15,9 +15,9 @@ mqtt:
   outboundclientid: switchbox-mqtt-publisher
   
 threadpool:
-  threadpool.core-pool-size: 50
-  threadpool.max-pool-size: 200
-  threadpool.queue-capacity: 50
+  core-pool-size: 50
+  max-pool-size: 200
+  queue-capacity: 50
   
 monitor:
   url: http://admin:password@localhost:61680/api/json/broker/connectors/tcp

@@ -2,6 +2,7 @@ package com.ibm.switchbox;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -35,7 +36,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import org.springframework.kafka.listener.config.ContainerProperties;
-import org.springframework.kafka.support.TopicPartitionInitialOffset;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.PollableChannel;
 
@@ -56,20 +56,11 @@ public class MqttkafkaBridge {
 	@Autowired
 	private KafkaSettings kafkaSettings;
 	
-	@Autowired
-	private ApolloMonitor apolloMonitor;
+//	@Autowired
+//	private ApolloMonitor apolloMonitor;
 
 	public static void main(final String... args) {
 		SpringApplication.run(MqttkafkaBridge.class, args);
-	}
-
-	@Bean
-	public MqttPahoClientFactory mqttClientFactory() {
-		DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
-		factory.setServerURIs(mqttSettings.getUrl());
-		factory.setUserName(mqttSettings.getUsername());
-		factory.setPassword(mqttSettings.getPassword());
-		return factory;
 	}
 
 	//mqtt producer
@@ -83,21 +74,29 @@ public class MqttkafkaBridge {
 	//mqtt consumer
 	@Bean
 	public IntegrationFlow mqttInFlow() throws Exception {
-		return IntegrationFlows.from(mqttInbound()).transform(p -> p).handle(handler()).get();
+		return IntegrationFlows.from(mqttInbound()).transform(p -> p).handle(handler()).get();//handler
 	}
 
 	//kafka consumer
 	@Bean
 	public IntegrationFlow kafkaInFlow() throws Exception {
-		return IntegrationFlows.from(adapter(container())).transform(p -> p).handle(logger()).get();
+		return IntegrationFlows.from(adapter(container())).transform(p -> p+" KAFKA pattern").handle(logger()).get();
 	}
 	
+	@Bean
+	public MqttPahoClientFactory mqttClientFactory() {
+		DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
+		factory.setServerURIs(mqttSettings.getUrl());
+		factory.setUserName(mqttSettings.getUsername());
+		factory.setPassword(mqttSettings.getPassword());
+		return factory;
+	}
 	@Bean
 	public MessageHandler mqttOutbound() {
 		MqttPahoMessageHandler messageHandler = new MqttPahoMessageHandler(mqttSettings.getOutboundclientid(),
 				mqttClientFactory());
 		messageHandler.setAsync(true);
-		messageHandler.setDefaultTopic(mqttSettings.getTopic());
+		messageHandler.setDefaultTopic("switchbox/orga/ac");
 		return messageHandler;
 	}
 
@@ -110,19 +109,18 @@ public class MqttkafkaBridge {
 	@Bean
 	public MessageProducerSupport mqttInbound() {
 		MqttPahoMessageDrivenChannelAdapter adapter = new MqttPahoMessageDrivenChannelAdapter(mqttSettings.getInboundclientid(),
-				mqttClientFactory(), mqttSettings.getTopic());
+				mqttClientFactory(), "switchbox/orga/ac");
 		adapter.setCompletionTimeout(5000);
 		adapter.setConverter(new DefaultPahoMessageConverter());
 		adapter.setQos(1);
 		return adapter;
 	}
 
-
 	@Bean
 	public MessageHandler handler() throws Exception {
 		KafkaProducerMessageHandler<String, String> handler =
 				new KafkaProducerMessageHandler<>(kafkaTemplate());
-		handler.setTopicExpression(new LiteralExpression(kafkaSettings.getTopic()));
+		handler.setTopicExpression(new LiteralExpression("switchbox.orga.ac"));
 		handler.setMessageKeyExpression(new LiteralExpression(kafkaSettings.getMessageKey()));
 		return handler;
 	}
@@ -149,7 +147,7 @@ public class MqttkafkaBridge {
 	@Bean
 	public KafkaMessageListenerContainer<String, String> container() throws Exception {
 		return new KafkaMessageListenerContainer<>(consumerFactory(),
-				new ContainerProperties(new TopicPartitionInitialOffset(kafkaSettings.getTopic(), 0)));
+				new ContainerProperties(Pattern.compile("switchbox.*")));
 	}
 
 	@Bean
@@ -171,8 +169,7 @@ public class MqttkafkaBridge {
 	}
 
 	@Bean
-	public KafkaMessageDrivenChannelAdapter<String, String>
-				adapter(KafkaMessageListenerContainer<String, String> container) {
+	public KafkaMessageDrivenChannelAdapter<String, String> adapter(KafkaMessageListenerContainer<String, String> container) {
 		KafkaMessageDrivenChannelAdapter<String, String> kafkaMessageDrivenChannelAdapter =
 				new KafkaMessageDrivenChannelAdapter<>(container);
 		kafkaMessageDrivenChannelAdapter.setOutputChannel(received());
