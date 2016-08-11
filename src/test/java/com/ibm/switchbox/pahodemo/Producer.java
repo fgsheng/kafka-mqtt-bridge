@@ -8,7 +8,7 @@ import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.eclipse.paho.client.mqttv3.MqttTopic;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
-public class Server {
+public class Producer {
 
 	public static final String HOST = "tcp://localhost:61613";
 
@@ -22,7 +22,7 @@ public class Server {
 
 	private MqttMessage message;
 
-	public Server() throws MqttException {
+	public Producer() throws MqttException {
 		 //MemoryPersistence设置clientid的保存形式，默认为以内存保存
 		client = new MqttClient(HOST, clientid, new MemoryPersistence());
 		connect();
@@ -53,13 +53,13 @@ public class Server {
 	}
 
 	public static void main(String[] args) throws MqttException {
-		Server server =  new Server();
+		Producer server =  new Producer();
 		server.message = new MqttMessage();
 		server.message.setQos(1);
-		server.message.setRetained(false);
+		server.message.setRetained(true);
 		server.message.setPayload("This is a test".getBytes());
         server.publish(server.message);
-        System.out.println(server.message.isRetained()+"------ratained状态");
+        System.out.println(server.message.isRetained()+"------ratained value");
         server.client.disconnect();
 	}
 

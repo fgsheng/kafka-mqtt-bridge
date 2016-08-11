@@ -1,4 +1,5 @@
 package com.ibm.switchbox.pahodemo;
+
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -14,7 +15,7 @@ import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.MqttTopic;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
-public class Client implements MqttCallback{
+public class Consumer implements MqttCallback {
 
 	public static final String HOST = "tcp://localhost:61613";
 	public static final String TOPIC = "switchbox/orga";
@@ -26,7 +27,7 @@ public class Client implements MqttCallback{
 
 	private ScheduledExecutorService scheduler;
 
-	//重新链接
+	// 重新链接
 	public void startReconnect() {
 		scheduler = Executors.newSingleThreadScheduledExecutor();
 		scheduler.scheduleAtFixedRate(new Runnable() {
@@ -34,9 +35,10 @@ public class Client implements MqttCallback{
 				if (!client.isConnected()) {
 					try {
 						client.connect(options);
-						int[] Qos  = {1};
-						String[] topic1 = {TOPIC};
-						client.subscribe(topic1, Qos);
+//						int[] Qos = { 1 };
+//						String[] topic1 = { TOPIC };
+//						client.subscribe(topic1, Qos);
+						System.out.println("Reconnect status: "+ client.isConnected());
 					} catch (MqttSecurityException e) {
 						e.printStackTrace();
 					} catch (MqttException e) {
@@ -50,7 +52,7 @@ public class Client implements MqttCallback{
 	private void start() {
 		try {
 			// host为主机名，test为clientid即连接MQTT的客户端ID，一般以客户端唯一标识符表示，MemoryPersistence设置clientid的保存形式，默认为以内存保存
-			client = new MqttClient(HOST, clientid+UUID.randomUUID().toString(), new MemoryPersistence());
+			client = new MqttClient(HOST, clientid, new MemoryPersistence());
 			// MQTT的连接设置
 			options = new MqttConnectOptions();
 			// 设置是否清空session,这里如果设置为false表示服务器会保留客户端的连接记录，这里设置为true表示每次连接到服务器都以新的身份连接
@@ -66,48 +68,51 @@ public class Client implements MqttCallback{
 			// 设置回调
 			client.setCallback(this);
 			MqttTopic topic = client.getTopic(TOPIC);
-			//setWill方法，如果项目中需要知道客户端是否掉线可以调用该方法。设置最终端口的通知消息  
+			// setWill方法，如果项目中需要知道客户端是否掉线可以调用该方法。设置最终端口的通知消息
 			options.setWill(topic, "close".getBytes(), 0, true);
-			
+
 			client.connect(options);
-			//订阅消息
-			int[] Qos  = {1};
-			String[] topic1 = {TOPIC};
+			// 订阅消息
+			int[] Qos = { 1 };
+			String[] topic1 = { TOPIC };
 			client.subscribe(topic1, Qos);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
+
 	public void disconnect() {
-		 try {
+		try {
 			client.disconnect();
 		} catch (MqttException e) {
 			e.printStackTrace();
 		}
 	}
 	
+	
+	@Override
 	public void connectionLost(Throwable cause) {
 		// 连接丢失后，一般在这里面进行重连
-		System.out.println("连接断开，可以做重连");
+		System.out.println("连接断开，开始重连");
 		this.startReconnect();
 	}
-
+	@Override
 	public void deliveryComplete(IMqttDeliveryToken token) {
 		// publish后会执行到这里
-		System.out.println("deliveryComplete---------"+ token.isComplete());
+		System.out.println("deliveryComplete---------" + token.isComplete());
 	}
 
 	@Override
-	public void messageArrived(String arg0, MqttMessage message) throws Exception {
+	public void messageArrived(String topic, MqttMessage message) throws Exception {
 		// subscribe后得到的消息会执行到这里面
-				System.out.println("接收消息主题:"+arg0);
-				System.out.println("接收消息Qos:"+message.getQos());
-				System.out.println("接收消息内容:"+new String(message.getPayload()));
-		
+		System.out.println("接收消息主题:" + topic);
+		System.out.println("接收消息Qos:" + message.getQos());
+		System.out.println("接收消息内容:" + new String(message.getPayload()));
+
 	}
 
-	public static void main(String[] args) throws MqttException {	
-		Client client = new Client();
+	public static void main(String[] args) throws MqttException {
+		Consumer client = new Consumer();
 		client.start();
 	}
 
