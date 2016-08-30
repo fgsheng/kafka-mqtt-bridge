@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @ConfigurationProperties(prefix = "mqtt")
-public class MqttSettings {
+public class ApolloSettings {
 
     private String username;
     private String password;

@@ -40,7 +40,7 @@ import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.PollableChannel;
 
 import com.ibm.switchbox.settings.KafkaSettings;
-import com.ibm.switchbox.settings.MqttSettings;
+import com.ibm.switchbox.settings.ApolloSettings;
 
 /***
  * TODO list
@@ -51,7 +51,7 @@ import com.ibm.switchbox.settings.MqttSettings;
 public class MqttkafkaBridge {
 
 	@Autowired
-	private MqttSettings mqttSettings;
+	private ApolloSettings mqttSettings;
 
 	@Autowired
 	private KafkaSettings kafkaSettings;

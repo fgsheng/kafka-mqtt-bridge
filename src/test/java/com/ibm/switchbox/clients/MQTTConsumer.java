@@ -1,4 +1,4 @@
-package com.ibm.switchbox.pahodemo;
+package com.ibm.switchbox.clients;
 
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -16,12 +16,11 @@ import org.eclipse.paho.client.mqttv3.MqttTopic;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 
-public class ConsumerB implements MqttCallback {
+public class MQTTConsumer implements MqttCallback {
 
-//	public static final String HOST = "tcp://localhost:61613";
-	public static final String HOST = "tcp://9.123.155.29:61613";
+	public static final String HOST = "tcp://localhost:1414";
 	public static final String TOPIC = "switchbox/a/b";
-	private static final String clientid = "clientB";
+	private static final String clientid = "clientA";
 	private MqttClient client;
 	private MqttConnectOptions options;
 	private String userName = "admin";
@@ -29,7 +28,7 @@ public class ConsumerB implements MqttCallback {
 
 	private ScheduledExecutorService scheduler;
 
-	// 重新链接
+	// reconnect
 	public void startReconnect() {
 		if (!client.isConnected()) {
 			try {
@@ -61,7 +60,6 @@ public class ConsumerB implements MqttCallback {
 			int[] Qos = { 1 };
 			String[] topic1 = { TOPIC };
 			client.subscribe(topic1, Qos);
-			System.out.println("CLient subscribe status:"+ client.isConnected());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -81,7 +79,7 @@ public class ConsumerB implements MqttCallback {
 		// 连接丢失后，一般在这里面进行重连
 		System.out.println("连接断开，开始重连");
 		try {
-			Thread.currentThread().sleep(30000);
+			Thread.currentThread().sleep(20000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -104,8 +102,7 @@ public class ConsumerB implements MqttCallback {
 	}
 
 	public static void main(String[] args) throws MqttException {
-		ConsumerB client = new ConsumerB();
+		MQTTConsumer client = new MQTTConsumer();
 		client.start();
 	}
-
 }
